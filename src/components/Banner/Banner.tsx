@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 const Banner = () => {
   return (
     <section className="relative min-h-screen overflow-hidden bg-[url('/background.png')] bg-cover bg-center text-white">
@@ -21,10 +22,10 @@ const Banner = () => {
 
           <div className="mt-9 flex flex-col items-center gap-4 sm:flex-row sm:justify-center lg:justify-start">
             <button className="h-12 w-full rounded-md bg-linear-to-r from-[#70c8ff] to-[#345cff] px-8 text-base font-bold text-white shadow-[0_0_22px_rgba(66,139,255,0.58)] transition duration-300 hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(92,168,255,0.72)] sm:w-44">
-              Get Started
+              <Link to="/login">Get Started</Link>
             </button>
             <button className="h-12 w-full rounded-md border border-white/25 bg-[#071229]/55 px-8 text-base font-bold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-sm transition duration-300 hover:border-[#6ca8ff] hover:bg-[#0c1f42]/80 sm:w-44">
-              Watch Demo
+              <Link to="/login">Watch Demo</Link>
             </button>
           </div>
         </div>

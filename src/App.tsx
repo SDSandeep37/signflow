@@ -1,14 +1,20 @@
-import Navbar from "./components/Navbar/Navbar";
 import "./App.css";
-import Banner from "./components/Banner/Banner";
-import Features from "./components/Features/Features";
+import Landing from "./Pages/Landing";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Layout from "./components/Layout";
+import Register from "./Pages/Register";
+import Login from "./Pages/Login";
 const App = () => {
   return (
-    <>
-      <Navbar />
-      <Banner />
-      <Features />
-    </>
+    <Router>
+      <Routes>
+        <Route path="/" element={<Layout />}>
+          <Route index element={<Landing />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+        </Route>
+      </Routes>
+    </Router>
   );
 };
 

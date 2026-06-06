@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { FiX, FiMenu } from "react-icons/fi";
-
+import { Link } from "react-router-dom";
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   return (
@@ -15,19 +15,24 @@ const Navbar = () => {
 
         {/* Desktop Menu */}
         <ul className="hidden md:flex gap-8 text-gray-300 font-medium">
-          <li className="hover:text-blue-400 transition">Features</li>
-          <li className="hover:text-blue-400 transition">How It Works</li>
-          <li className="hover:text-blue-400 transition">Audit Trail</li>
-          <li className="hover:text-blue-400 transition">Pricing</li>
+          <li className="hover:text-blue-400 transition">
+            <Link to="#features">Features</Link>
+          </li>
+          <li className="hover:text-blue-400 transition">
+            <Link to="#how-it-works">How It Works</Link>
+          </li>
+          <li className="hover:text-blue-400 transition">
+            <Link to="#audit-trail">Audit Trail</Link>
+          </li>
+          <li className="hover:text-blue-400 transition">
+            <Link to="#pricing">Pricing</Link>
+          </li>
         </ul>
 
         {/* CTA Buttons */}
         <div className="hidden md:flex gap-4">
-          <button className="text-gray-300 hover:text-blue-400 transition">
-            Login
-          </button>
           <button className="bg-blue-500 hover:bg-blue-600 text-white font-semibold px-5 py-2 rounded-lg transition">
-            Get Started
+            <Link to="/login">Get Started</Link>
           </button>
         </div>
 
@@ -44,12 +49,20 @@ const Navbar = () => {
       {isOpen && (
         <div className="md:hidden bg-[#010f1a] backdrop-blur-lg border-t border-blue-900/40">
           <ul className="flex flex-col items-center py-6 gap-6 text-gray-300 font-medium">
-            <li className="hover:text-blue-400 transition">Features</li>
-            <li className="hover:text-blue-400 transition">How It Works</li>
-            <li className="hover:text-blue-400 transition">Audit Trail</li>
-            <li className="hover:text-blue-400 transition">Pricing</li>
-            <button className=" bg-blue-500 hover:bg-blue-600 text-white font-semibold px-5 py-2 rounded-lg transition">
-              Get Started
+            <li className="hover:text-blue-400 transition">
+              <Link to="#features">Features</Link>
+            </li>
+            <li className="hover:text-blue-400 transition">
+              <Link to="#how-it-works">How It Works</Link>
+            </li>
+            <li className="hover:text-blue-400 transition">
+              <Link to="#audit-trail">Audit Trail</Link>
+            </li>
+            <li className="hover:text-blue-400 transition">
+              <Link to="#pricing">Pricing</Link>
+            </li>
+            <button className="cursor-pointer bg-blue-500 hover:bg-blue-600 text-white font-semibold px-5 py-2 rounded-lg transition">
+              <Link to="/login">Get Started</Link>
             </button>
           </ul>
         </div>
