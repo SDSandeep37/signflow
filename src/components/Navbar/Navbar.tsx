@@ -1,8 +1,14 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { FiX, FiMenu } from "react-icons/fi";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
+import { UserAuthContext } from "../../Contexts/AuthContext";
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const location = useLocation();
+
+  const { user, logout } = useContext(UserAuthContext)!;
+
+  const isDashboard = location.pathname === "/dashboard";
   return (
     <nav className="fixed top-0 left-0 w-full z-50 bg-[#010f1a] backdrop-blur-md border-b border-blue-900/40">
       <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
@@ -14,26 +20,55 @@ const Navbar = () => {
         </div>
 
         {/* Desktop Menu */}
-        <ul className="hidden md:flex gap-8 text-gray-300 font-medium">
-          <li className="hover:text-blue-400 transition">
-            <Link to="#features">Features</Link>
-          </li>
-          <li className="hover:text-blue-400 transition">
-            <Link to="#how-it-works">How It Works</Link>
-          </li>
-          <li className="hover:text-blue-400 transition">
-            <Link to="#audit-trail">Audit Trail</Link>
-          </li>
-          <li className="hover:text-blue-400 transition">
-            <Link to="#pricing">Pricing</Link>
-          </li>
-        </ul>
+        {!isDashboard && (
+          <ul className="hidden md:flex gap-8 text-gray-300 font-medium">
+            <li className="hover:text-blue-400 transition">
+              <Link to="#features">Features</Link>
+            </li>
+            <li className="hover:text-blue-400 transition">
+              <Link to="#how-it-works">How It Works</Link>
+            </li>
+            <li className="hover:text-blue-400 transition">
+              <Link to="#audit-trail">Audit Trail</Link>
+            </li>
+            <li className="hover:text-blue-400 transition">
+              <Link to="#pricing">Pricing</Link>
+            </li>
+          </ul>
+        )}
 
         {/* CTA Buttons */}
         <div className="hidden md:flex gap-4">
-          <button className="bg-blue-500 hover:bg-blue-600 text-white font-semibold px-5 py-2 rounded-lg transition">
-            <Link to="/login">Get Started</Link>
-          </button>
+          {/* {user && isDashboard ? (
+            <button
+              onClick={() => navigate("/")}
+              className="bg-blue-500 hover:bg-blue-600 text-white font-semibold px-5 py-2 rounded-lg transition"
+            >
+              <Link to="/">Dashboard</Link>
+            </button>
+          ) : (
+            <button className="bg-blue-500 hover:bg-blue-600 text-white font-semibold px-5 py-2 rounded-lg transition">
+              <Link to="/login">Get Started</Link>
+            </button>
+          )} */}
+          {user ? (
+            isDashboard ? (
+              <button
+                onClick={() => logout()}
+                className="cursor-pointer bg-orange-500 hover:bg-orange-600 text-white font-semibold px-5 py-2 rounded-lg transition"
+              >
+                Logout
+              </button>
+            ) : (
+              <button className="cursor-pointer bg-green-500 hover:bg-green-600 text-white font-semibold px-5 py-2 rounded-lg transition">
+                <Link to="/dashboard">Dashboard</Link>
+              </button>
+            )
+          ) : (
+            <button className="cursor-pointer bg-blue-500 hover:bg-blue-600 text-white font-semibold px-5 py-2 rounded-lg transition">
+              <Link to="/login">Get Started</Link>
+            </button>
+          )}
         </div>
 
         {/* Mobile Menu Toggle */}
@@ -49,21 +84,44 @@ const Navbar = () => {
       {isOpen && (
         <div className="md:hidden bg-[#010f1a] backdrop-blur-lg border-t border-blue-900/40">
           <ul className="flex flex-col items-center py-6 gap-6 text-gray-300 font-medium">
-            <li className="hover:text-blue-400 transition">
-              <Link to="#features">Features</Link>
-            </li>
-            <li className="hover:text-blue-400 transition">
-              <Link to="#how-it-works">How It Works</Link>
-            </li>
-            <li className="hover:text-blue-400 transition">
-              <Link to="#audit-trail">Audit Trail</Link>
-            </li>
-            <li className="hover:text-blue-400 transition">
-              <Link to="#pricing">Pricing</Link>
-            </li>
-            <button className="cursor-pointer bg-blue-500 hover:bg-blue-600 text-white font-semibold px-5 py-2 rounded-lg transition">
+            {!isDashboard && (
+              <>
+                <li className="hover:text-blue-400 transition">
+                  <Link to="#features">Features</Link>
+                </li>
+                <li className="hover:text-blue-400 transition">
+                  <Link to="#how-it-works">How It Works</Link>
+                </li>
+                <li className="hover:text-blue-400 transition">
+                  <Link to="#audit-trail">Audit Trail</Link>
+                </li>
+                <li className="hover:text-blue-400 transition">
+                  <Link to="#pricing">Pricing</Link>
+                </li>
+              </>
+            )}
+
+            {user ? (
+              isDashboard ? (
+                <button
+                  onClick={() => logout()}
+                  className="cursor-pointer bg-orange-500 hover:bg-orange-600 text-white font-semibold px-5 py-2 rounded-lg transition"
+                >
+                  Logout
+                </button>
+              ) : (
+                <button className="cursor-pointer bg-green-500 hover:bg-green-600 text-white font-semibold px-5 py-2 rounded-lg transition">
+                  <Link to="/dashboard">Dashboard</Link>
+                </button>
+              )
+            ) : (
+              <button className="cursor-pointer bg-blue-500 hover:bg-blue-600 text-white font-semibold px-5 py-2 rounded-lg transition">
+                <Link to="/login">Get Started</Link>
+              </button>
+            )}
+            {/* <button className="cursor-pointer bg-blue-500 hover:bg-blue-600 text-white font-semibold px-5 py-2 rounded-lg transition">
               <Link to="/login">Get Started</Link>
-            </button>
+            </button> */}
           </ul>
         </div>
       )}

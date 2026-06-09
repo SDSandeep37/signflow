@@ -5,17 +5,22 @@ import Layout from "./components/Layout";
 import Register from "./Pages/Register";
 import Login from "./Pages/Login";
 import NotFound from "./Pages/NotFound";
+import Dashoard from "./Pages/Dashoard";
+import { UserAuthProvider } from "./Contexts/AuthContext";
 const App = () => {
   return (
     <Router>
-      <Routes>
-        <Route path="/" element={<Layout />}>
-          <Route index element={<Landing />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-        </Route>
-        <Route path="*" element={<NotFound />} />
-      </Routes>
+      <UserAuthProvider>
+        <Routes>
+          <Route path="/" element={<Layout />}>
+            <Route index element={<Landing />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/dashboard" element={<Dashoard />} />
+          </Route>
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </UserAuthProvider>
     </Router>
   );
 };

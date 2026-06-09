@@ -1,11 +1,15 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useContext, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { UserAuthContext } from "../Contexts/AuthContext";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [messageType, setMessageType] = useState("");
   const [message, setMessage] = useState("");
+  const navigate = useNavigate();
+  const { refreshUser } = useContext(UserAuthContext)!;
+
   const timer = () => {
     setTimeout(() => {
       setMessage("");
@@ -61,6 +65,8 @@ const Login = () => {
       }
       setMessageType("success");
       setMessage(result.message);
+      await refreshUser();
+      navigate("/dashboard");
     } catch (error) {
       console.error("Login failed:", error);
       setMessageType("error");
