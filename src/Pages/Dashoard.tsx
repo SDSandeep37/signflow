@@ -6,7 +6,7 @@ import Topbar from "../components/Topbar/Topbar";
 import { UserAuthContext } from "../Contexts/AuthContext";
 import { Link } from "react-router-dom";
 import SummaryCard from "../components/SummaryCard/SummaryCard";
-import DocumentRow from "../components/DocumentRow/DocumentRow";
+import ResponisveTable from "../components/ResponsiveTable/ResponisveTable";
 
 const Dashoard = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -58,49 +58,8 @@ const Dashoard = () => {
         </div>
 
         {/* Documents Table */}
-        <div className="bg-black/60 backdrop-blur-lg rounded-xl p-6 border border-blue-900/40">
-          <h2 className="text-xl font-semibold mb-4">Your Documents</h2>
-          <div className="table-auto md:table-fixed">
-            <table className="table-auto w-full min-w-125 text-left text-gray-300">
-              <thead>
-                <tr className="border-b border-blue-900/40">
-                  <th className="pb-2">Document</th>
-                  <th className="pb-2">Status</th>
-                  <th className="pb-2">Updated</th>
-                  <th className="pb-2">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                <DocumentRow
-                  name="NDA Agreement"
-                  status="Pending"
-                  date="Today, 10:45 AM"
-                />
-                <DocumentRow
-                  name="Sales Contract"
-                  status="Signed"
-                  date="Yesterday, 3:15 PM"
-                />
-                <DocumentRow
-                  name="Partnership Agreement"
-                  status="Rejected"
-                  date="Mar 22, 2026"
-                />
-                <DocumentRow
-                  name="Employment Offer"
-                  status="Signed"
-                  date="Mar 18, 2026"
-                />
-              </tbody>
-            </table>
-          </div>
 
-          <div className="flex justify-center mt-6">
-            <button className="bg-blue-500 hover:bg-blue-600 text-white font-semibold px-6 py-3 rounded-lg transition">
-              Upload New Document
-            </button>
-          </div>
-        </div>
+        <ResponisveTable />
       </main>
     </div>
   );
