@@ -10,7 +10,7 @@ import { UserAuthProvider } from "./Contexts/AuthContext";
 
 import Documents from "./Pages/Documents";
 import DashboardLayout from "./components/DashboardLayout";
-import Document from "./Pages/Document";
+import DocumentViewer from "./Pages/DocumentViewer";
 const App = () => {
   return (
     <Router>
@@ -23,7 +23,7 @@ const App = () => {
             <Route path="dashboard" element={<DashboardLayout />}>
               <Route index element={<Dashoard />} />
               <Route path="documents" element={<Documents />} />
-              <Route path="documents/:id" element={<Document />} />
+              <Route path="documents/:id" element={<DocumentViewer />} />
             </Route>
           </Route>
           <Route path="*" element={<NotFound />} />
