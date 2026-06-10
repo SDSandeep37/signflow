@@ -22,19 +22,19 @@ const Sidebar = ({ isOpen }: { isOpen: boolean }) => {
               <RxDashboard /> Dashboard
             </Link>
             <Link
-              to="/documents"
+              to="/dashboard/documents"
               className="hover:text-blue-400 transition flex items-center gap-2"
             >
               <HiOutlineDocumentText /> Documents
             </Link>
             <Link
-              to="/audit"
+              to="/dashboard/audit"
               className="hover:text-blue-400 transition flex items-center gap-2"
             >
               <AiOutlineAudit /> Audit Trail
             </Link>
             <Link
-              to="/settings"
+              to="/dashboard/settings"
               className="hover:text-blue-400 transition flex items-center gap-2"
             >
               <CiSettings /> Settings

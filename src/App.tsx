@@ -7,6 +7,10 @@ import Login from "./Pages/Login";
 import NotFound from "./Pages/NotFound";
 import Dashoard from "./Pages/Dashoard";
 import { UserAuthProvider } from "./Contexts/AuthContext";
+
+import Documents from "./Pages/Documents";
+import DashboardLayout from "./components/DashboardLayout";
+import Document from "./Pages/Document";
 const App = () => {
   return (
     <Router>
@@ -14,9 +18,13 @@ const App = () => {
         <Routes>
           <Route path="/" element={<Layout />}>
             <Route index element={<Landing />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/dashboard" element={<Dashoard />} />
+            <Route path="login" element={<Login />} />
+            <Route path="register" element={<Register />} />
+            <Route path="dashboard" element={<DashboardLayout />}>
+              <Route index element={<Dashoard />} />
+              <Route path="documents" element={<Documents />} />
+              <Route path="documents/:id" element={<Document />} />
+            </Route>
           </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>

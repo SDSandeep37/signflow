@@ -14,8 +14,10 @@ const Navbar = () => {
       <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
         {/* Logo */}
         <div className="flex items-center gap-2">
-          <span className="text-white font-semibold text-xl">
-            Sign<span className="text-blue-400">Flow</span>
+          <span className="text-white font-semibold text-xl cursor-pointer">
+            <Link to="/">
+              Sign<span className="text-blue-400">Flow</span>
+            </Link>
           </span>
         </div>
 
