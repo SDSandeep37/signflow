@@ -26,7 +26,7 @@ interface DocumentTypes {
 }
 
 interface SignatureBox {
-  id: number;
+  id: string | number;
   page: number;
   xPercent: number;
   yPercent: number;
@@ -46,11 +46,14 @@ const DocumentViewer = () => {
 
   // Signature placement state
   const [signatures, setSignatures] = useState<SignatureBox[]>([]);
-  const [draggingId, setDraggingId] = useState<number | null>(null);
+  const [draggingId, setDraggingId] = useState<number | string | null>(null);
   const pdfContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (id) getDocument();
+    if (!id) return;
+
+    getDocument();
+    getSignatureFields();
   }, [id]);
 
   const getDocument = async (): Promise<void> => {
@@ -98,9 +101,10 @@ const DocumentViewer = () => {
   };
 
   const saveSignatureFields = async (): Promise<void> => {
+    console.log(signatures);
     try {
       const response = await fetch(
-        `${import.meta.env.VITE_PUBLIC_API_URL}/document/${id}/signature-fields`,
+        `${import.meta.env.VITE_PUBLIC_API_URL}/signature-fields/save`,
         {
           method: "POST",
           headers: {
@@ -108,7 +112,8 @@ const DocumentViewer = () => {
           },
           credentials: "include",
           body: JSON.stringify({
-            signatures,
+            documentId: id,
+            fields: signatures,
           }),
         },
       );
@@ -122,7 +127,34 @@ const DocumentViewer = () => {
       alert("Signature fields saved successfully");
     } catch (error) {
       console.error(error);
-      alert("Failed to save signature fields");
+      //alert("Failed to save signature fields");
+    }
+  };
+
+  //get save signature fields
+  const getSignatureFields = async () => {
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_PUBLIC_API_URL}/signature-fields/${id}`,
+        {
+          credentials: "include",
+        },
+      );
+
+      const data = await response.json();
+
+      if (data.success) {
+        const mappedFields = data.fields.map((field: any) => ({
+          id: field.id,
+          page: field.page_number,
+          xPercent: Number(field.x_percent),
+          yPercent: Number(field.y_percent),
+        }));
+
+        setSignatures(mappedFields);
+      }
+    } catch (error) {
+      console.error(error);
     }
   };
   // Dragging logic
