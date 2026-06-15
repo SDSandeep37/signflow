@@ -14,8 +14,10 @@ import {
   FiPenTool,
   FiClock,
 } from "react-icons/fi";
-import { CiStickyNote } from "react-icons/ci";
+
 import pdfWorker from "pdfjs-dist/build/pdf.worker.min.mjs?url";
+import SearchBox from "../components/SearchBox/SearchBox";
+import { TbUsersPlus } from "react-icons/tb";
 
 pdfjs.GlobalWorkerOptions.workerSrc = pdfWorker;
 
@@ -49,9 +51,14 @@ const DocumentViewer = () => {
   const [draggingId, setDraggingId] = useState<number | string | null>(null);
   const pdfContainerRef = useRef<HTMLDivElement>(null);
 
+  //signer search box related
+  const [showSeachModel, setShowSearchModel] = useState(false);
+
   useEffect(() => {
     if (!id) return;
 
+    localStorage.clear();
+    localStorage.setItem("documentId", id);
     getDocument();
     getSignatureFields();
   }, [id]);
@@ -281,7 +288,7 @@ const DocumentViewer = () => {
                       onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
-                        console.log("delete clicked");
+
                         setSignatures((prev) =>
                           prev.filter((s) => s.id !== sig.id),
                         );
@@ -344,18 +351,26 @@ const DocumentViewer = () => {
             <li className="flex items-center gap-3 hover:text-blue-400 cursor-pointer transition">
               <FiClock /> Audit Trail
             </li>
-            <li className="flex items-center gap-3 hover:text-blue-400 cursor-pointer transition">
+            {/* <li className="flex items-center gap-3 hover:text-blue-400 cursor-pointer transition">
               <FiPenTool /> Add Signature
+            </li> */}
+            <li
+              onClick={() => setShowSearchModel(true)}
+              className="flex items-center gap-3 hover:text-blue-400 cursor-pointer transition"
+            >
+              <TbUsersPlus />
+              Add Signers
             </li>
-            <li className="flex items-center gap-3 hover:text-blue-400 cursor-pointer transition">
-              <CiStickyNote /> Notes
-            </li>
-            <li className="flex items-center gap-3 hover:text-blue-400 cursor-pointer transition">
+            {/* <li className="flex items-center gap-3 hover:text-blue-400 cursor-pointer transition">
               <FiFileText /> Version History
-            </li>
+            </li> */}
           </ul>
         </aside>
       </div>
+      <SearchBox
+        isOpen={showSeachModel}
+        onClose={() => setShowSearchModel(false)}
+      />
     </div>
   );
 };
