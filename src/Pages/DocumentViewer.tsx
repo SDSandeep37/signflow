@@ -10,7 +10,7 @@ import {
   FiZoomIn,
   FiZoomOut,
   FiMaximize,
-  FiFileText,
+  // FiFileText,
   FiPenTool,
   FiClock,
 } from "react-icons/fi";
