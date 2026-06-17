@@ -1,7 +1,7 @@
 import { useParams } from "react-router-dom";
 import "react-pdf/dist/Page/TextLayer.css";
 import "react-pdf/dist/Page/AnnotationLayer.css";
-import { useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
 import {
   FiSend,
@@ -18,6 +18,8 @@ import {
 import pdfWorker from "pdfjs-dist/build/pdf.worker.min.mjs?url";
 import SearchBox from "../components/SearchBox/SearchBox";
 import { TbUsersPlus } from "react-icons/tb";
+import { UserAuthContext } from "../Contexts/AuthContext";
+import SignatureModal from "../components/SignatureModel/SignatureModal";
 
 pdfjs.GlobalWorkerOptions.workerSrc = pdfWorker;
 
@@ -32,10 +34,28 @@ interface SignatureBox {
   page: number;
   xPercent: number;
   yPercent: number;
+
+  signerId: string | null;
+
+  signed: boolean;
+  signatureImage?: string;
+
+  // from joined query in database
+  user_id?: string;
+  signer_name?: string;
+  signer_email?: string;
 }
 
+interface Signer {
+  id: string; // document_signers.id
+  user_id: string;
+  name: string;
+  email: string;
+  status: string;
+}
 const DocumentViewer = () => {
   const { id } = useParams<{ id: string }>();
+  const { user } = useContext(UserAuthContext)!;
   const [numPages, setNumPages] = useState<number | null>(null);
   const [pageNumber, setPageNumber] = useState<number>(1);
   const [scale, setScale] = useState<number>(1.0);
@@ -51,9 +71,20 @@ const DocumentViewer = () => {
   const [draggingId, setDraggingId] = useState<number | string | null>(null);
   const pdfContainerRef = useRef<HTMLDivElement>(null);
 
+  const [signers, setSigners] = useState<Signer[]>([]);
+  const [selectedSignerId, setSelectedSignerId] = useState<string | null>(null);
   //signer search box related
   const [showSeachModel, setShowSearchModel] = useState(false);
 
+  //signing model state
+  const [showSignatureModal, setShowSignatureModal] = useState(false);
+
+  const [selectedField, setSelectedField] = useState<SignatureBox | null>(null);
+  const handleSignField = (field: SignatureBox) => {
+    setSelectedField(field);
+    setShowSignatureModal(true);
+  };
+  //load document and signature fields
   useEffect(() => {
     if (!id) return;
 
@@ -61,8 +92,10 @@ const DocumentViewer = () => {
     localStorage.setItem("documentId", id);
     getDocument();
     getSignatureFields();
+    getSingers();
   }, [id]);
 
+  //get the uploaded document
   const getDocument = async (): Promise<void> => {
     try {
       const response = await fetch(
@@ -96,19 +129,31 @@ const DocumentViewer = () => {
 
   // Add new signature box
   const handleAddSignature = (): void => {
+    if (!selectedSignerId) {
+      alert("Please select a signer first");
+      return;
+    }
+    const nextSigner = signers[signatures.length % signers.length];
+    console.log(nextSigner);
     setSignatures((prev) => [
       ...prev,
       {
-        id: Date.now(),
+        id: crypto.randomUUID(),
+        // id: nextSigner.user_id,
         page: pageNumber,
         xPercent: 50,
         yPercent: 20,
+
+        signerId: nextSigner?.id ?? null,
+        // signerId: signers.length > 0 ? signers[0].id : null,
+
+        signed: false,
       },
     ]);
   };
 
+  // save the signature fields i.e  place for signature
   const saveSignatureFields = async (): Promise<void> => {
-    console.log(signatures);
     try {
       const response = await fetch(
         `${import.meta.env.VITE_PUBLIC_API_URL}/signature-fields/save`,
@@ -138,7 +183,7 @@ const DocumentViewer = () => {
     }
   };
 
-  //get save signature fields
+  //get saved signature fields
   const getSignatureFields = async () => {
     try {
       const response = await fetch(
@@ -156,6 +201,15 @@ const DocumentViewer = () => {
           page: field.page_number,
           xPercent: Number(field.x_percent),
           yPercent: Number(field.y_percent),
+
+          signerId: field.signer_id,
+
+          signed: field.signed,
+          signatureImage: field.signature_image,
+
+          user_id: field.user_id,
+          signer_name: field.signer_name,
+          signer_email: field.signer_email,
         }));
 
         setSignatures(mappedFields);
@@ -194,6 +248,96 @@ const DocumentViewer = () => {
     setDraggingId(null);
   };
 
+  //get the signers for the document
+
+  const getSingers = async () => {
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_PUBLIC_API_URL}/document-signer/${id}/signers`,
+        {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+        },
+      );
+
+      const data = await response.json();
+
+      console.log(data);
+      if (response.ok && data.success === true) {
+        setSigners(data.signers);
+      } else {
+        console.error(data.message || "Failed to fetch document");
+      }
+    } catch (error) {
+      console.error("Error while fetching the document:", error);
+      setDocument({ id: "", full_url: "", original_filename: "" });
+    } finally {
+      setLoading(false);
+    }
+  };
+  const handleSaveSignature = async (signatureImage: string) => {
+    if (!selectedField) return;
+
+    const response = await fetch(
+      `${import.meta.env.VITE_PUBLIC_API_URL}/signature-fields/${selectedField.id}/sign`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          signatureImage,
+        }),
+      },
+    );
+    const data = await response.json();
+    if (!response.ok) {
+      alert(data.message);
+    }
+    alert(data.message);
+    setShowSignatureModal(false);
+
+    getSignatureFields();
+  };
+
+  //dowload document
+  const handleDownload = async () => {
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_PUBLIC_API_URL}/document/${id}/download`,
+        {
+          method: "GET",
+          credentials: "include",
+        },
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to download document");
+      }
+
+      const blob = await response.blob();
+
+      const url = window.URL.createObjectURL(blob);
+
+      const link = window.document.createElement("a");
+
+      link.href = url;
+
+      link.download = `signed-${document.original_filename}`;
+
+      window.document.body.appendChild(link);
+
+      link.click();
+
+      link.remove();
+
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Download Error:", error);
+    }
+  };
   if (loading) {
     return (
       <div className="flex h-full items-center justify-center">
@@ -225,7 +369,10 @@ const DocumentViewer = () => {
           >
             <FiPenTool /> Add Signature
           </button>
-          <button className="bg-gray-800 hover:bg-gray-700 px-4 py-2 rounded-lg flex items-center gap-2">
+          <button
+            onClick={handleDownload}
+            className="bg-gray-800 hover:bg-gray-700 px-4 py-2 rounded-lg flex items-center gap-2"
+          >
             <FiDownload /> Download
           </button>
           <button className="bg-gray-800 hover:bg-gray-700 p-2 rounded-lg">
@@ -258,46 +405,93 @@ const DocumentViewer = () => {
 
               {signatures
                 .filter((sig) => sig.page === pageNumber)
-                .map((sig) => (
-                  <div
-                    key={sig.id}
-                    className="absolute z-50 w-32 h-12 bg-blue-500/80 border border-blue-400 rounded-md flex items-center justify-center text-white cursor-move select-none shadow-lg"
-                    style={{
-                      left: `${sig.xPercent}%`,
-                      top: `${sig.yPercent}%`,
-                      transform: "translate(-50%, -50%)",
-                    }}
-                    onPointerDown={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      const target = e.target as HTMLElement;
+                .map((sig) => {
+                  // const assignedSigner = signers.find(
+                  //   (signer) => signer.id === sig.signerId,
+                  // );
+                  const isCurrentUser = sig.user_id === user?.id;
 
-                      if (target.closest("button")) return;
-                      // (e.currentTarget as HTMLDivElement).setPointerCapture(
-                      //   e.pointerId,
-                      // );
-                      setDraggingId(sig.id);
-                    }}
-                    onPointerUp={() => {
-                      setDraggingId(null);
-                    }}
-                  >
-                    Sign Here
-                    <button
-                      className="cursor-pointer absolute -top-2 -right-2 w-5 h-5 z-9999 rounded-full bg-red-500 text-xs"
-                      onClick={(e) => {
+                  return (
+                    <div
+                      key={sig.id}
+                      className={`absolute z-50 ${sig.signed ? "w-32 h-12" : "bg-blue-500/80 w-32 h-12 rounded-md flex items-center justify-center text-white cursor-move select-none shadow-lg"} `}
+                      style={{
+                        left: `${sig.xPercent}%`,
+                        top: `${sig.yPercent}%`,
+                        transform: "translate(-50%, -50%)",
+                      }}
+                      onPointerDown={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
 
-                        setSignatures((prev) =>
-                          prev.filter((s) => s.id !== sig.id),
-                        );
+                        const target = e.target as HTMLElement;
+
+                        if (target.closest("button")) return;
+
+                        setDraggingId(sig.id);
+                      }}
+                      onPointerUp={() => {
+                        setDraggingId(null);
                       }}
                     >
-                      ×
-                    </button>
-                  </div>
-                ))}
+                      <button
+                        className="cursor-pointer absolute -top-2 -right-2 w-5 h-5 z-9999 rounded-full bg-red-500 text-xs"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+
+                          setSignatures((prev) =>
+                            prev.filter((s) => s.id !== sig.id),
+                          );
+                        }}
+                      >
+                        ×
+                      </button>
+
+                      <div className="text-xs font-medium text-center px-1">
+                        {/* {isCurrentUser ? (
+                          <div className="text-xs text-center">
+                            ✍ Your Signature Here
+                          </div>
+                        ) : (
+                          <div className="text-xs text-center">
+                            <span>{sig.signer_name}</span>
+                          </div>
+                        )} */}
+                        {/* {isCurrentUser ? (
+                          <button
+                            className="text-xs font-semibold cursor-pointer"
+                            onClick={() => handleSignField(sig)}
+                          >
+                            ✍ Your Signature Here
+                          </button>
+                        ) : (
+                          <div className="text-xs text-center">
+                            {sig.signer_name}
+                          </div>
+                        )} */}
+                        {sig.signed && sig.signatureImage ? (
+                          <img
+                            src={sig.signatureImage}
+                            alt="Signature"
+                            className="max-w-full max-h-full object-contain"
+                          />
+                        ) : isCurrentUser ? (
+                          <button
+                            className="text-xs font-semibold"
+                            onClick={() => handleSignField(sig)}
+                          >
+                            ✍ Your Signature Here
+                          </button>
+                        ) : (
+                          <div className="text-xs text-center">
+                            {sig.signer_name}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
             </div>
           ) : (
             <p className="text-red-400">No document found</p>
@@ -365,12 +559,42 @@ const DocumentViewer = () => {
               <FiFileText /> Version History
             </li> */}
           </ul>
+          <div className="mt-6">
+            <h3 className="text-lg font-semibold mb-3">Signers</h3>
+
+            <div className="space-y-2">
+              {signers.map((signer) => (
+                <button
+                  key={signer.id}
+                  type="button"
+                  onClick={() => setSelectedSignerId(signer.id)}
+                  className={`w-full text-left p-3 rounded-lg border transition ${
+                    selectedSignerId === signer.id
+                      ? "bg-blue-500 border-blue-400 text-white"
+                      : "bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700"
+                  }`}
+                >
+                  <p className="font-medium">{signer.name}</p>
+                  <p className="text-xs opacity-70">{signer.email}</p>
+                </button>
+              ))}
+            </div>
+          </div>
         </aside>
       </div>
       <SearchBox
         isOpen={showSeachModel}
         onClose={() => setShowSearchModel(false)}
       />
+      {showSignatureModal && (
+        <SignatureModal
+          onClose={() => {
+            setShowSignatureModal(false);
+            setSelectedField(null);
+          }}
+          onSave={handleSaveSignature}
+        />
+      )}
     </div>
   );
 };

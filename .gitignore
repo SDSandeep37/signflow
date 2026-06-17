@@ -24,3 +24,5 @@ dist-ssr
 *.sw?
 .env
 data.json
+/src/Pages/DocumentViewer copy.tsx
+workflow.txt
