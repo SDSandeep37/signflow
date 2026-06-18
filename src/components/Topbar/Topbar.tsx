@@ -8,7 +8,7 @@ const Topbar = () => {
   return (
     <div className="flex justify-between items-center mb-8">
       <h1 className="text-3xl font-bold">
-        Welcome Back,{" "}
+        Welcome,{" "}
         <span className="text-blue-400 capitalize">{user?.name || "User"}</span>
       </h1>
       {/* <div className="flex items-center gap-4">

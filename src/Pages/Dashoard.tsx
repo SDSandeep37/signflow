@@ -1,14 +1,24 @@
 import { FiCheckCircle, FiXCircle, FiClock } from "react-icons/fi";
 
-import { useContext } from "react";
+import { useContext, useEffect, useState } from "react";
 
 import { UserAuthContext } from "../Contexts/AuthContext";
 import { Link } from "react-router-dom";
 import SummaryCard from "../components/SummaryCard/SummaryCard";
 import ResponisveTable from "../components/ResponsiveTable/ResponisveTable";
+import { userPendingSignature } from "../utils/userPendingSignatures";
 
 const Dashoard = () => {
   const { user, loading } = useContext(UserAuthContext)!;
+  const [pendingSignatures, setPendingSignatures] = useState([]);
+
+  useEffect(() => {
+    async function getPendingSignatures() {
+      const result = await userPendingSignature();
+      setPendingSignatures(result);
+    }
+    getPendingSignatures();
+  }, []);
   if (loading) return null;
   if (!user) {
     return (
@@ -63,20 +73,23 @@ const Dashoard = () => {
         <SummaryCard
           icon={<FiClock />}
           label="Pending Signatures"
-          count="3"
+          count={Number(pendingSignatures.length)}
           color="text-yellow-400"
+          link="dashboard/pending-signatures"
         />
         <SummaryCard
           icon={<FiCheckCircle />}
           label="Completed"
-          count="8"
+          count="0"
           color="text-green-400"
+          link="#"
         />
         <SummaryCard
           icon={<FiXCircle />}
           label="Rejected"
-          count="1"
+          count="0"
           color="text-red-400"
+          link="#"
         />
       </div>
 

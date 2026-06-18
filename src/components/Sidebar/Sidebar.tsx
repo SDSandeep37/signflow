@@ -1,7 +1,7 @@
 import { RxDashboard } from "react-icons/rx";
 import { HiOutlineDocumentText } from "react-icons/hi2";
-import { AiOutlineAudit } from "react-icons/ai";
-import { CiSettings } from "react-icons/ci";
+// import { AiOutlineAudit } from "react-icons/ai";
+// import { CiSettings } from "react-icons/ci";
 import { Link } from "react-router-dom";
 const Sidebar = ({ isOpen }: { isOpen: boolean }) => {
   return (
@@ -27,7 +27,7 @@ const Sidebar = ({ isOpen }: { isOpen: boolean }) => {
             >
               <HiOutlineDocumentText /> Documents
             </Link>
-            <Link
+            {/* <Link
               to="/dashboard/audit"
               className="hover:text-blue-400 transition flex items-center gap-2"
             >
@@ -38,7 +38,7 @@ const Sidebar = ({ isOpen }: { isOpen: boolean }) => {
               className="hover:text-blue-400 transition flex items-center gap-2"
             >
               <CiSettings /> Settings
-            </Link>
+            </Link> */}
           </nav>
         </div>
         <div className="px-6 py-4 text-gray-400 text-sm border-t border-blue-900/40">

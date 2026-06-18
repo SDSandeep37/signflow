@@ -20,6 +20,7 @@ import SearchBox from "../components/SearchBox/SearchBox";
 import { TbUsersPlus } from "react-icons/tb";
 import { UserAuthContext } from "../Contexts/AuthContext";
 import SignatureModal from "../components/SignatureModel/SignatureModal";
+import { ownerCheck } from "../utils/documentOwner";
 
 pdfjs.GlobalWorkerOptions.workerSrc = pdfWorker;
 
@@ -80,6 +81,9 @@ const DocumentViewer = () => {
   const [showSignatureModal, setShowSignatureModal] = useState(false);
 
   const [selectedField, setSelectedField] = useState<SignatureBox | null>(null);
+
+  //owner of document
+  const [isOwner, setIsOwner] = useState<boolean>(false);
   const handleSignField = (field: SignatureBox) => {
     setSelectedField(field);
     setShowSignatureModal(true);
@@ -90,6 +94,11 @@ const DocumentViewer = () => {
 
     localStorage.clear();
     localStorage.setItem("documentId", id);
+    async function verifyDocumentOwner() {
+      const result = await ownerCheck();
+      setIsOwner(result ?? false);
+    }
+    verifyDocumentOwner();
     getDocument();
     getSignatureFields();
     getSingers();
@@ -352,23 +361,28 @@ const DocumentViewer = () => {
       <header className="flex justify-between items-center px-8 py-4 border-b border-blue-900/40 bg-black/60 backdrop-blur-lg">
         <div className="flex items-center gap-3">
           <img src="/logo.png" alt="SignFlow Logo" className="w-8 h-8" />
-          <h1 className="text-lg font-semibold">
+          <h1 className="text-sm font-semibold">
             {document.original_filename}
           </h1>
         </div>
         <div className="flex items-center gap-4">
-          <button
-            onClick={saveSignatureFields}
-            className="bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded-lg flex items-center gap-2"
-          >
-            <FiSend /> Send for Signature
-          </button>
-          <button
-            onClick={handleAddSignature}
-            className="bg-gray-800 hover:bg-gray-700 px-4 py-2 rounded-lg flex items-center gap-2"
-          >
-            <FiPenTool /> Add Signature
-          </button>
+          {isOwner && (
+            <>
+              <button
+                onClick={saveSignatureFields}
+                className="bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded-lg flex items-center gap-2"
+              >
+                <FiSend /> Send for Signature
+              </button>
+              <button
+                onClick={handleAddSignature}
+                className="bg-gray-800 hover:bg-gray-700 px-4 py-2 rounded-lg flex items-center gap-2"
+              >
+                <FiPenTool /> Add Signature
+              </button>
+            </>
+          )}
+
           <button
             onClick={handleDownload}
             className="bg-gray-800 hover:bg-gray-700 px-4 py-2 rounded-lg flex items-center gap-2"
@@ -434,19 +448,21 @@ const DocumentViewer = () => {
                         setDraggingId(null);
                       }}
                     >
-                      <button
-                        className="cursor-pointer absolute -top-2 -right-2 w-5 h-5 z-9999 rounded-full bg-red-500 text-xs"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
+                      {isOwner && (
+                        <button
+                          className="cursor-pointer absolute -top-2 -right-2 w-5 h-5 z-9999 rounded-full bg-red-500 text-xs"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
 
-                          setSignatures((prev) =>
-                            prev.filter((s) => s.id !== sig.id),
-                          );
-                        }}
-                      >
-                        ×
-                      </button>
+                            setSignatures((prev) =>
+                              prev.filter((s) => s.id !== sig.id),
+                            );
+                          }}
+                        >
+                          ×
+                        </button>
+                      )}
 
                       <div className="text-xs font-medium text-center px-1">
                         {/* {isCurrentUser ? (
@@ -548,38 +564,43 @@ const DocumentViewer = () => {
             {/* <li className="flex items-center gap-3 hover:text-blue-400 cursor-pointer transition">
               <FiPenTool /> Add Signature
             </li> */}
-            <li
-              onClick={() => setShowSearchModel(true)}
-              className="flex items-center gap-3 hover:text-blue-400 cursor-pointer transition"
-            >
-              <TbUsersPlus />
-              Add Signers
-            </li>
+            {isOwner && (
+              <li
+                onClick={() => setShowSearchModel(true)}
+                className="flex items-center gap-3 hover:text-blue-400 cursor-pointer transition"
+              >
+                <TbUsersPlus />
+                Add Signers
+              </li>
+            )}
+
             {/* <li className="flex items-center gap-3 hover:text-blue-400 cursor-pointer transition">
               <FiFileText /> Version History
             </li> */}
           </ul>
-          <div className="mt-6">
-            <h3 className="text-lg font-semibold mb-3">Signers</h3>
+          {isOwner && (
+            <div className="mt-6">
+              <h3 className="text-lg font-semibold mb-3">Signers</h3>
 
-            <div className="space-y-2">
-              {signers.map((signer) => (
-                <button
-                  key={signer.id}
-                  type="button"
-                  onClick={() => setSelectedSignerId(signer.id)}
-                  className={`w-full text-left p-3 rounded-lg border transition ${
-                    selectedSignerId === signer.id
-                      ? "bg-blue-500 border-blue-400 text-white"
-                      : "bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700"
-                  }`}
-                >
-                  <p className="font-medium">{signer.name}</p>
-                  <p className="text-xs opacity-70">{signer.email}</p>
-                </button>
-              ))}
+              <div className="space-y-2">
+                {signers.map((signer) => (
+                  <button
+                    key={signer.id}
+                    type="button"
+                    onClick={() => setSelectedSignerId(signer.id)}
+                    className={`w-full text-left p-3 rounded-lg border transition ${
+                      selectedSignerId === signer.id
+                        ? "bg-blue-500 border-blue-400 text-white"
+                        : "bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700"
+                    }`}
+                  >
+                    <p className="font-medium">{signer.name}</p>
+                    <p className="text-xs opacity-70">{signer.email}</p>
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
         </aside>
       </div>
       <SearchBox
